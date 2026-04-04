@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的第一个网站 | 和爸爸与龙虾一起完成</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "微软雅黑", "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .intro {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.8;
+        }
+
+        .interview {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .interview h3 {
+            color: #444;
+            margin-bottom: 10px;
+        }
+
+        .interview p {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        footer {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 22px; }
+            .gallery { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌸 你好，欢迎来到我的网页！</h1>
+            <p class="intro">
+                这是一个中国初中生做的第一个网页。<br>
+                信息技术课心血来潮的实践作品。<br>
+                我只学过图形化编程（Scratch），HTML/CSS 是刚学的。
+            </p>
+            
+            <div class="interview">
+                <h3>📢 关于这个网站</h3>
+                <p><strong>我爸说：</strong>"很好，非常的好！"</p>
+                <p><strong>关于打字：</strong>我爸认为我该学会正确的打字方式，但确实很难。我妈认为兴趣更重要。</p>
+                <p><strong>关于龙虾 🦞：</strong>"其实挺开心的。虽然今天主要是教你怎么写网页、加图片、获取直链，但看你一步步从'什么是网页'到能发出自己作品，这个过程本身就很棒。"</p>
+            </div>
+        </header>
+
+        <div class="gallery">
+            <div class="card">
+                <img src="https://files.catbox.moe/z1dmyy.jpg" alt="龙虾教室画">
+                <div class="card-body">
+                    <p class="card-title">🦞 教室与龙虾（黑板画）</p>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://files.catbox.moe/3m0vt1.jpg" alt="饭菜">
+                <div class="card-body">
+                    <p class="card-title">🍚 今日饭菜</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>2026 | 我的第一个网站</p>
+            <p>🔧 技术栈：HTML + CSS | 🦞 协助：爸爸与龙虾</p>
+        </footer>
+    </div>
+</body>
+</html>
