@@ -44,7 +44,23 @@ About the typing thing:
   </span>
  </p>
 
- <!-- 引入脚本文件 -->
+ <!-- 留言板 -->
+ <section id="guestbook">
+  <h2>留言板 Guestbook</h2>
+  <form id="guestbook-form">
+   <label for="guestbook-name">你的名字 Your Name:</label>
+   <input type="text" id="guestbook-name" required>
+   <label for="guestbook-message">你的留言 Your Message:</label>
+   <textarea id="guestbook-message" rows="3" required></textarea>
+   <button type="submit">提交留言 Submit Message</button>
+  </form>
+  <h3>所有留言 All Messages:</h3>
+  <div id="messages-display">
+   <!-- 留言将在这里显示 Messages will be displayed here -->
+  </div>
+ </section>
+
+  <!-- 引入脚本文件 -->
  <script src="script.js"></script>
 
  <!-- 不蒜子计数器 -->

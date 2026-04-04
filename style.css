@@ -6,7 +6,7 @@ body {
     padding: 20px;
     text-align: center;
     
-    background-image: url("https://img0.baidu.com/it/u=2458316934,2258428165&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=1083");
+    background-image: url("https://img2.baidu.com/it/u=4226853470,3053223723&fm=253&fmt=auto&app=120&f=JPEG?w=500&h=1106");
     background-size: cover;
 }body 
 
@@ -37,4 +37,58 @@ button {
 
 button:hover {
     background-color: #4559a0;
+}
+
+/* 留言板 */
+#guestbook {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 30px;
+}
+
+#guestbook h2, #guestbook h3 {
+    color: #2c5aa0;
+}
+
+#guestbook-form label {
+    display: block;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+#guestbook-form input[type="text"],
+#guestbook-form textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    min-height: 80px; /* Make the textarea smaller */
+}
+
+#guestbook-form button {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 0;
+}
+
+.guestbook-message-item {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: left;
+}
+
+.guestbook-message-item strong {
+    color: #564caf;
+}
+
+.guestbook-message-item .timestamp {
+    font-size: 0.8em;
+    color: #888;
+    float: right;
 }
