@@ -44,27 +44,34 @@ About the typing thing:
   </span>
  </p>
 
- <!-- 留言板 -->
+ <!-- 留言板 - Disqus 评论系统 -->
  <section id="guestbook">
   <h2>留言板 Guestbook</h2>
-  <form id="guestbook-form">
-   <label for="guestbook-name">你的名字 Your Name:</label>
-   <input type="text" id="guestbook-name" required>
-   <label for="guestbook-message">你的留言 Your Message:</label>
-   <textarea id="guestbook-message" rows="3" required></textarea>
-   <button type="submit">提交留言 Submit Message</button>
-  </form>
-  <h3>所有留言 All Messages:</h3>
-  <div id="messages-display">
-   <!-- 留言将在这里显示 Messages will be displayed here -->
-  </div>
+  
+  <!-- Disqus 评论区 -->
+  <div id="disqus_thread"></div>
  </section>
 
-  <!-- 引入脚本文件 -->
+ <!-- 引入脚本文件 -->
  <script src="script.js"></script>
 
  <!-- 不蒜子计数器 -->
  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+ 
+ <!-- Disqus 评论系统 -->
+ <script>
+   var disqus_config = function () {
+     this.page.url = window.location.href;
+     this.page.identifier = window.location.pathname;
+   };
+   (function() {
+     var d = document, s = d.createElement('script');
+     s.src = 'https://wodewangzhan.disqus.com/embed.js';
+     s.setAttribute('data-timestamp', +new Date());
+     (d.head || d.body).appendChild(s);
+   })();
+ </script>
+ <noscript>请启用 JavaScript 查看评论 <a href="https://disqus.com/?ref_noscript">Disqus</a></noscript>
 
 </body>
 </html>
