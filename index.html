@@ -1,78 +1,81 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
- <meta charset="UTF-8">
- <title>我的第一个网页</title>
- <!-- 引入样式文件 -->
- <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>我的第一个网页</title>
+  <!-- 引入样式文件 -->
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
- <!-- 标题 -->
- <h1>👋 你好，欢迎来到我的网页！Hey there, glad you're here! </h1>
+  <!-- 切换龙虾模式按钮 -->
+  <button id="lobsterBtn" class="lobster-btn">龙虾模式</button>
 
- <!-- 图片 -->
- <img src="https://files.catbox.moe/3m0vt1.jpg" alt="占位图">
-
- <!-- 段落 -->
- <p class="text">这是我的第一个网页，也是我第一个 3D 作品展示，是我爸和一只龙虾协助我完成的。这是我的第一个3d作品！这大概是一间教室🏫，因为我也不清楚嘻嘻。</p>
- <p class="text">我是一名中国🇨🇳的初中生🎒，这是我心血来潮想要实践信息技术的一个作品，实话说，我只学过图形化编程。</p>
- <p class="text">这是我爸🧔🏻的原话：很好，非常的好 tips：我爸认为我该学会正确的打字方式，但确实很难。我妈认为兴趣更重要。</p>
- <p class="text">这是龙虾🦞的感想：其实挺开心的。虽然今天主要是教你怎么写网页💻、加图片、获取直链这些基础操作，但看你一步步从"什么是网页"到能发出自己作品，这个过程本身就很棒。</p>
- <p class="text">This is my first website,it’s also my first 3D project .built with my dad and a lobster (don't ask).this is my first 3d work It's supposed to be a classroom, I think... maybe? lol</p>  
- <p class="text">I'm a Chinese middle school student. This is something I made as a hands-on project for my IT class. To be honest, the only programming I've learned before is block-based coding (like Scratch).</p>
- <p class="text">Dad's words: "Very good, really good!" About the typing thing: "My dad thinks I should learn proper typing technique, but it's really hard. My mom thinks having interest matters more." 。</p>
- <p class="text">The lobster says: "To be honest, I had a lot of fun today. Even though it was mostly teaching you the basics — how to write a webpage, add images, get direct links — watching you go from 'what's a website?' to actually publishing your own work was pretty awesome in itself."</p>
+  <!-- 标题 -->
+  <h1>👋 你好，欢迎来到我的网页！Hey there, glad you're here! </h1>
+ 
+  <!-- 图片 -->
+  <img src="https://files.catbox.moe/3m0vt1.jpg" alt="占位图">
+ 
+  <!-- 段落 -->
+  <p class="text">这是我的第一个网页，也是我第一个 3D 作品展示，是我爸和一只龙虾协助我完成的。这是我的第一个3d作品！这大概是一间教室🏫，因为我也不清楚嘻嘻。</p>
+  <p class="text">我是一名中国🇨🇳的初中生🎒，这是我心血来潮想要实践信息技术的一个作品，实话说，我只学过图形化编程。</p>
+  <p class="text">这是我爸🧔🏻的原话：很好，非常的好 tips：我爸认为我该学会正确的打字方式，但确实很难。我妈认为兴趣更重要。</p>
+  <p class="text">这是龙虾🦞的感想：其实挺开心的。虽然今天主要是教你怎么写网页💻、加图片、获取直链这些基础操作，但看你一步步从"什么是网页"到能发出自己作品，这个过程本身就很棒。</p>
+  <p class="text">This is my first website,it's also my first 3D project .built with my dad and a lobster (don't ask).this is my first 3d work It's supposed to be a classroom, I think... maybe? lol</p>  
+  <p class="text">I'm a Chinese middle school student. This is something I made as a hands-on project for my IT class. To be honest, the only programming I've learned before is block-based coding (like Scratch).</p>
+  <p class="text">Dad's words: "Very good, really good!" About the typing thing: "My dad thinks I should learn proper typing technique, but it's really hard. My mom thinks having interest matters more." 。</p>
+  <p class="text">The lobster says: "To be honest, I had a lot of fun today. Even though it was mostly teaching you the basics — how to write a webpage, add images, get direct links — watching you go from 'what's a website?' to actually publishing your own work was pretty awesome in itself."</p>
 
 <h1> 我的爱好 my hobby</h1>
 <ul>
- <li class="text">🎨 绘画 drawing (how interesting it is)</li>
- <li class="text">🚴 骑自行车 riding (sometimes it makes me feel tired)</li>
- <li class="text">📖 阅读 reading</li>
+  <li class="text">🎨 绘画 drawing (how interesting it is)</li>
+  <li class="text">🚴 骑自行车 riding (sometimes it makes me feel tired)</li>
+  <li class="text">📖 阅读 reading</li>
 </ul>
 
- <!-- 按钮 -->
+  <!-- 按钮 -->
 <button id="darkBtn">点我！tap me</button>
 
 <div id="overlay" class="overlay"></div>
 <div id="message" class="message">谁把灯关了? who turned off the light ?</div>
 
- <!-- 访问计数器 -->
- <p>
-  👀 累计访问人数：
-  <span id="busuanzi_container_site_uv">
-    <span id="busuanzi_value_site_uv"></span>
-  </span>
- </p>
+  <!-- 访问计数器 -->
+  <p>
+   👀 累计访问人数：
+   <span id="busuanzi_container_site_uv">
+     <span id="busuanzi_value_site_uv"></span>
+   </span>
+  </p>
 
- <!-- 留言板 - Disqus 评论系统 -->
- <section id="guestbook">
-  <h2>留言板 Guestbook</h2>
+  <!-- 留言板 - Disqus 评论系统 -->
+  <section id="guestbook">
+   <h2>留言板 Guestbook</h2>
+   
+   <!-- Disqus 评论区 -->
+   <div id="disqus_thread"></div>
+  </section>
+
+  <!-- 引入脚本文件 -->
+  <script src="script.js"></script>
+
+  <!-- 不蒜子计数器 -->
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
   
-  <!-- Disqus 评论区 -->
-  <div id="disqus_thread"></div>
- </section>
-
- <!-- 引入脚本文件 -->
- <script src="script.js"></script>
-
- <!-- 不蒜子计数器 -->
- <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
- 
- <!-- Disqus 评论系统 -->
- <script>
-   var disqus_config = function () {
-     this.page.url = window.location.href;
-     this.page.identifier = window.location.pathname;
-   };
-   (function() {
-     var d = document, s = d.createElement('script');
-     s.src = 'https://wodewangzhan.disqus.com/embed.js';
-     s.setAttribute('data-timestamp', +new Date());
-     (d.head || d.body).appendChild(s);
-   })();
- </script>
- <noscript>请启用 JavaScript 查看评论 <a href="https://disqus.com/?ref_noscript">Disqus</a></noscript>
+  <!-- Disqus 评论系统 -->
+  <script>
+    var disqus_config = function () {
+      this.page.url = window.location.href;
+      this.page.identifier = window.location.pathname;
+    };
+    (function() {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://wodewangzhan.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  </script>
+  <noscript>请启用 JavaScript 查看评论 <a href="https://disqus.com/?ref_noscript">Disqus</a></noscript>
 <script>
   const darkBtn = document.getElementById("darkBtn");
   const overlay = document.getElementById("overlay");
@@ -88,8 +91,22 @@
     }, 2000);
   });
 </script>
+<script>
+  // 切换龙虾模式
+  const lobsterBtn = document.getElementById("lobsterBtn");
 
+  lobsterBtn.addEventListener("click", function () {
+    document.body.classList.toggle("lobster-mode");
 
+    if (document.body.classList.contains("lobster-mode")) {
+      lobsterBtn.textContent = "普通模式";
+    } else {
+      lobsterBtn.textContent = "龙虾模式";
+    }
+  });
+</script>
+
+ 
 
 </body>
 </html>
