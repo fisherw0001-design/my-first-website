@@ -67,6 +67,24 @@ img:hover {
     transform: scale(1.05);
 }
 
+/* 导航按钮 */
+.nav-btn {
+    display: inline-block;
+    background-color: #e67e22;
+    color: white;
+    padding: 14px 36px;
+    border-radius: 25px;
+    font-size: 18px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+}
+
+.nav-btn:hover {
+    background-color: #d35400;
+}
+
 /* 按钮 */
 button {
     background-color: #564caf;
