@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>内存卡拾取</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #222;
+      background: #f3f4f6;
+    }
+    h1 {
+      font-size: clamp(1.15rem, 3vw, 1.6rem);
+      font-weight: 800;
+    }
+    .shell {
+      width: min(920px, 100%);
+      background: #fff;
+      border: 2px solid #222;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 6px 6px 0 #222;
+    }
+    .hud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 2px solid #222;
+      background: #fff;
+    }
+    .stat {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 96px;
+    }
+    .stat label { color: #666; font-size: 0.9rem; }
+    .stat strong {
+      font-size: 1.3rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .bar-wrap { flex: 1 1 180px; min-width: 150px; }
+    .bar-wrap label {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+    .bar {
+      height: 12px;
+      border: 2px solid #222;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #eee;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: #222;
+      transition: width 0.15s ease;
+    }
+    .canvas-wrap { position: relative; background: #fff; }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+      touch-action: none;
+      background: #fff;
+    }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 16px;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      width: min(420px, 100%);
+      background: #fff;
+      border: 2px solid #222;
+      border-radius: 14px;
+      padding: 22px 18px;
+      text-align: center;
+      box-shadow: 4px 4px 0 #222;
+    }
+    .card h2 { font-size: 1.4rem; margin-bottom: 10px; }
+    .card p {
+      color: #444;
+      line-height: 1.6;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+    .card .tips {
+      text-align: left;
+      margin: 12px 0 16px;
+      padding: 12px 14px;
+      border: 2px dashed #999;
+      border-radius: 10px;
+      background: #fafafa;
+    }
+    .card .tips li {
+      margin: 6px 0 6px 18px;
+      color: #333;
+      font-size: 0.92rem;
+    }
+    .trap-art {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 8px 0 14px;
+    }
+    .trap-art img {
+      width: 120px;
+      height: auto;
+      image-rendering: pixelated;
+    }
+    .blender-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 2px solid #222;
+      border-radius: 999px;
+      background: #fff7ed;
+      font-weight: 700;
+    }
+    .blender-badge svg { width: 28px; height: 28px; display: block; }
+    .btn {
+      appearance: none;
+      border: 2px solid #222;
+      border-radius: 12px;
+      padding: 11px 20px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      color: #fff;
+      background: #222;
+      box-shadow: 3px 3px 0 #888;
+    }
+    .btn:active {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 #888;
+    }
+    .help {
+      width: min(920px, 100%);
+      color: #555;
+      font-size: 0.9rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .help kbd {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1.5px solid #222;
+      border-radius: 6px;
+      background: #fff;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>💾 内存卡拾取 · 满 100 分胜利</h1>
+
+  <div class="shell">
+    <div class="hud">
+      <div class="stat"><label>分数</label><strong id="scoreText">0</strong></div>
+      <div class="stat"><label>漏掉</label><strong id="missText">0 / 3</strong></div>
+      <div class="bar-wrap">
+        <label><span>进度</span><span id="goalText">0 / 100</span></label>
+        <div class="bar"><i id="progressBar"></i></div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="game" width="900" height="480" aria-label="内存卡拾取游戏"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="card" id="panel">
+          <h2 id="titleText">电脑要装内存啦</h2>
+          <div id="extraArt" class="trap-art" hidden></div>
+          <p id="msgText">内存卡从右往左飞，飞到电脑旁时按空格拾取。</p>
+          <ul class="tips" id="tipsBox">
+            <li><strong>16 内存</strong>：+16 分</li>
+            <li><strong>32 内存</strong>：+32 分</li>
+            <li>电脑固定在左边，不会动</li>
+            <li>好卡漏掉 3 次就输</li>
+            <li>累计 <strong>100 分</strong> 胜利</li>
+          </ul>
+          <button class="btn" id="startBtn">开始游戏</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="help">
+    操作：<kbd>空格</kbd> / 点击画面拾取 · <kbd>P</kbd> 暂停 · <kbd>R</kbd> 重开
+  </p>
+
+  <script>
+    (() => {
+      const ASSETS = {
+        pc: "https://img.fisht.cc.cd/file/1784383247723_电脑.PNG",
+        trap: "https://img.fisht.cc.cd/file/1784383186185_陷阱.PNG",
+        ram16: "https://img.fisht.cc.cd/file/1784383176291_16内存.PNG",
+        ram32: "https://img.fisht.cc.cd/file/1784383172643_32内存.PNG",
+      };
+
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+
+      const scoreText = document.getElementById("scoreText");
+      const missText = document.getElementById("missText");
+      const goalText = document.getElementById("goalText");
+      const progressBar = document.getElementById("progressBar");
+      const overlay = document.getElementById("overlay");
+      const titleText = document.getElementById("titleText");
+      const msgText = document.getElementById("msgText");
+      const tipsBox = document.getElementById("tipsBox");
+      const extraArt = document.getElementById("extraArt");
+      const startBtn = document.getElementById("startBtn");
+
+      const GOAL = 100;
+      const MAX_MISS = 3;
+      // 电脑固定左侧；拾取区在电脑右侧前方
+      const PC = { x: 36, y: 150, w: 150, h: 110 };
+      const CATCH_ZONE = { x: 150, y: 100, w: 190, h: 280 };
+
+      const images = { pc: null, trap: null, ram16: null, ram32: null };
+      let imagesReady = false;
+
+      const CARD_TYPES = [
+        { key: "ram16", name: "16内存", score: 16, weight: 45, trap: false },
+        { key: "ram32", name: "32内存", score: 32, weight: 30, trap: false },
+        { key: "trap", name: "陷阱", score: 0, weight: 18, trap: true },
+      ];
+
+      let state = "menu"; // menu | playing | paused | win | lose | trap
+      let score = 0;
+      let miss = 0;
+      let cards = [];
+      let floatTexts = [];
+      let lastSpawn = 0;
+      let spawnInterval = 1200;
+      let speedBase = 2.4;
+      let time = 0;
+      let lastTs = 0;
+      let zoneFlash = 0;
+
+      function loadImage(src) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => {
+            console.warn("图片加载失败:", src);
+            resolve(null);
+          };
+          img.src = src;
+        });
+      }
+
+      async function loadAll() {
+        const [pc, trap, ram16, ram32] = await Promise.all([
+          loadImage(ASSETS.pc),
+          loadImage(ASSETS.trap),
+          loadImage(ASSETS.ram16),
+          loadImage(ASSETS.ram32),
+        ]);
+        images.pc = pc;
+        images.trap = trap;
+        images.ram16 = ram16;
+        images.ram32 = ram32;
+        imagesReady = true;
+      }
+
+      function updateHud() {
+        scoreText.textContent = String(score);
+        missText.textContent = `${miss} / ${MAX_MISS}`;
+        const shown = Math.max(0, Math.min(score, GOAL));
+        goalText.textContent = `${shown} / ${GOAL}`;
+        progressBar.style.width = `${Math.max(0, Math.min(100, (score / GOAL) * 100))}%`;
+      }
+
+      function blenderSvg() {
+        // 简化 Blender 风格图标（橙环 + 蓝中心）
+        return `
+          <span class="blender-badge" title="Blender">
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="32" r="30" fill="#E87D0D" stroke="#222" stroke-width="3"/>
+              <circle cx="32" cy="32" r="14" fill="#265787" stroke="#222" stroke-width="2"/>
+              <circle cx="32" cy="32" r="5" fill="#fff"/>
+              <path d="M32 8 L36 20 L32 18 L28 20 Z" fill="#fff"/>
+            </svg>
+            Blender
+          </span>
+        `;
+      }
+
+      function showMenu() {
+        state = "menu";
+        titleText.textContent = "电脑要装内存啦";
+        msgText.textContent = "内存卡从右往左飞，飞到电脑旁时按空格拾取。";
+        tipsBox.hidden = false;
+        extraArt.hidden = true;
+        extraArt.innerHTML = "";
+        startBtn.textContent = "开始游戏";
+        overlay.classList.remove("hidden");
+      }
+
+      function showWin() {
+        state = "win";
+        titleText.textContent = "胜利！";
+        msgText.textContent = `内存装好了！总分 ${score}，电脑现在很开心。`;
+        tipsBox.hidden = true;
+        extraArt.hidden = true;
+        extraArt.innerHTML = "";
+        startBtn.textContent = "再玩一次";
+        overlay.classList.remove("hidden");
+      }
+
+      function showMissLose() {
+        state = "lose";
+        titleText.textContent = "内存不够…";
+        msgText.textContent = `好卡漏掉了 ${miss} 次。当前分数 ${score}。再来一次！`;
+        tipsBox.hidden = true;
+        extraArt.hidden = true;
+        extraArt.innerHTML = "";
+        startBtn.textContent = "重新开始";
+        overlay.classList.remove("hidden");
+      }
+
+      function showTrapLose() {
+        state = "trap";
+        titleText.textContent = "你掉进陷阱了";
+        msgText.textContent = "其实创作的本意是内存不够，blander太吃内存了";
+        tipsBox.hidden = true;
+        extraArt.hidden = false;
+        extraArt.innerHTML = `
+          <img src="${ASSETS.trap}" alt="" />
+        `;
+        startBtn.textContent = "重新开始";
+        overlay.classList.remove("hidden");
+      }
+
+      function hideOverlay() {
+        overlay.classList.add("hidden");
+      }
+
+      function resetGame() {
+        score = 0;
+        miss = 0;
+        cards = [];
+        floatTexts = [];
+        lastSpawn = 0;
+        spawnInterval = 1200;
+        speedBase = 2.4;
+        time = 0;
+        zoneFlash = 0;
+        updateHud();
+      }
+
+      function weightedType() {
+        const total = CARD_TYPES.reduce((s, t) => s + t.weight, 0);
+        let r = Math.random() * total;
+        for (const t of CARD_TYPES) {
+          r -= t.weight;
+          if (r <= 0) return t;
+        }
+        return CARD_TYPES[0];
+      }
+
+      function spawnCard() {
+        const type = weightedType();
+        const laneY = 120 + Math.random() * 210;
+        const speed = speedBase + Math.random() * 1.2 + Math.min(2, score * 0.02);
+        // 卡片显示尺寸
+        let w = 96, h = 68;
+        if (type.key === "trap") { w = 100; h = 56; }
+        if (type.key === "ram32") { w = 100; h = 62; }
+        cards.push({
+          x: W + 30,
+          y: laneY,
+          w,
+          h,
+          speed,
+          type,
+          bob: Math.random() * Math.PI * 2,
+          caught: false,
+        });
+      }
+
+      function addFloat(x, y, text, color) {
+        floatTexts.push({ x, y, text, color, life: 1 });
+      }
+
+      function tryCatch() {
+        if (state !== "playing") return;
+
+        let best = null;
+        for (const c of cards) {
+          if (c.caught) continue;
+          const cx = c.x + c.w / 2;
+          const cy = c.y + c.h / 2;
+          const inZone =
+            cx > CATCH_ZONE.x &&
+            cx < CATCH_ZONE.x + CATCH_ZONE.w &&
+            cy > CATCH_ZONE.y &&
+            cy < CATCH_ZONE.y + CATCH_ZONE.h;
+          if (inZone && (!best || c.x > best.x)) best = c;
+        }
+
+        if (!best) {
+          addFloat(CATCH_ZONE.x + 90, CATCH_ZONE.y + 36, "空抓", "#888");
+          return;
+        }
+
+        best.caught = true;
+        zoneFlash = 0.35;
+
+        if (best.type.trap) {
+          best.x = -999;
+          showTrapLose();
+          return;
+        }
+
+        score += best.type.score;
+        addFloat(
+          best.x + best.w / 2,
+          best.y,
+          `+${best.type.score}`,
+          "#0a7a32"
+        );
+        best.x = -999;
+        updateHud();
+
+        if (score >= GOAL) {
+          showWin();
+        }
+      }
+
+      function update(dt) {
+        if (state !== "playing") return;
+        time += dt;
+
+        spawnInterval = Math.max(650, 1200 - score * 6);
+        speedBase = 2.4 + Math.min(2.2, score * 0.03);
+
+        lastSpawn += dt * 1000;
+        if (lastSpawn >= spawnInterval) {
+          lastSpawn = 0;
+          spawnCard();
+        }
+
+        for (const c of cards) {
+          if (c.caught) continue;
+          c.x -= c.speed * (dt * 60);
+          c.bob += dt * 3.5;
+        }
+
+        const remain = [];
+        for (const c of cards) {
+          if (c.caught || c.x + c.w < -10) {
+            // 好卡漏掉
+            if (!c.caught && c.x + c.w < -10 && !c.type.trap) {
+              miss += 1;
+              addFloat(100, c.y + 20, "漏掉", "#c0392b");
+              updateHud();
+              if (miss >= MAX_MISS) {
+                showMissLose();
+              }
+            }
+            // 陷阱漏掉不算事（躲开了）
+            continue;
+          }
+          remain.push(c);
+        }
+        cards = remain;
+
+        for (const f of floatTexts) {
+          f.y -= 28 * dt;
+          f.life -= dt;
+        }
+        floatTexts = floatTexts.filter((f) => f.life > 0);
+        zoneFlash = Math.max(0, zoneFlash - dt);
+      }
+
+      function roundRect(x, y, w, h, r) {
+        const rr = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      }
+
+      function drawBackground() {
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, W, H);
+
+        // 淡网格，白底手绘风
+        ctx.strokeStyle = "rgba(0,0,0,0.05)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x <= W; x += 40) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, H);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= H; y += 40) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(W, y);
+          ctx.stroke();
+        }
+
+        // 拾取区
+        ctx.save();
+        ctx.fillStyle = zoneFlash > 0
+          ? `rgba(34, 197, 94, ${0.08 + zoneFlash * 0.2})`
+          : "rgba(0,0,0,0.03)";
+        roundRect(CATCH_ZONE.x, CATCH_ZONE.y, CATCH_ZONE.w, CATCH_ZONE.h, 14);
+        ctx.fill();
+        ctx.setLineDash([7, 7]);
+        ctx.lineDashOffset = -time * 28;
+        ctx.strokeStyle = zoneFlash > 0 ? "#16a34a" : "#999";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.restore();
+
+        ctx.fillStyle = "#777";
+        ctx.font = "12px Segoe UI, sans-serif";
+        ctx.fillText("拾取区 · 卡飞到这里按空格", CATCH_ZONE.x + 16, CATCH_ZONE.y + 20);
+      }
+
+      function drawImageCover(img, x, y, w, h) {
+        if (!img) {
+          // 占位
+          ctx.fillStyle = "#ddd";
+          roundRect(x, y, w, h, 8);
+          ctx.fill();
+          ctx.strokeStyle = "#222";
+          ctx.stroke();
+          return;
+        }
+        // 按比例塞进框内
+        const scale = Math.min(w / img.width, h / img.height);
+        const dw = img.width * scale;
+        const dh = img.height * scale;
+        const dx = x + (w - dw) / 2;
+        const dy = y + (h - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function drawComputer() {
+        ctx.fillStyle = "#222";
+        ctx.font = "bold 14px Segoe UI, sans-serif";
+        ctx.fillText("主角：电脑", PC.x, PC.y - 12);
+        drawImageCover(images.pc, PC.x, PC.y, PC.w, PC.h);
+      }
+
+      function drawCard(c) {
+        const y = c.y + Math.sin(c.bob) * 3;
+        const img = images[c.type.key];
+        drawImageCover(img, c.x, y, c.w, c.h);
+
+        // 好卡写分数；坏卡不加任何文字提示
+        if (!c.type.trap) {
+          ctx.fillStyle = "#222";
+          ctx.font = "bold 12px Segoe UI, sans-serif";
+          ctx.fillText(`+${c.type.score}`, c.x + 4, y + c.h + 14);
+        }
+      }
+
+      function drawFloats() {
+        ctx.textAlign = "center";
+        for (const f of floatTexts) {
+          ctx.globalAlpha = Math.max(0, f.life);
+          ctx.fillStyle = f.color;
+          ctx.font = "bold 18px Segoe UI, sans-serif";
+          ctx.fillText(f.text, f.x, f.y);
+        }
+        ctx.globalAlpha = 1;
+        ctx.textAlign = "left";
+      }
+
+      function drawPaused() {
+        if (state !== "paused") return;
+        ctx.fillStyle = "rgba(255,255,255,0.65)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "#222";
+        ctx.font = "bold 28px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("已暂停", W / 2, H / 2 - 6);
+        ctx.font = "16px Segoe UI, sans-serif";
+        ctx.fillStyle = "#555";
+        ctx.fillText("按 P 继续", W / 2, H / 2 + 24);
+        ctx.textAlign = "left";
+      }
+
+      function draw() {
+        drawBackground();
+        drawComputer();
+        for (const c of cards) drawCard(c);
+        drawFloats();
+        drawPaused();
+
+        if (!imagesReady) {
+          ctx.fillStyle = "rgba(255,255,255,0.8)";
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = "#222";
+          ctx.font = "16px Segoe UI, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("素材加载中…", W / 2, H / 2);
+          ctx.textAlign = "left";
+        }
+      }
+
+      function loop(ts) {
+        if (!lastTs) lastTs = ts;
+        const dt = Math.min(0.033, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      function startGame() {
+        resetGame();
+        state = "playing";
+        hideOverlay();
+        lastTs = 0;
+      }
+
+      startBtn.addEventListener("click", () => startGame());
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          if (state === "menu" || state === "win" || state === "lose" || state === "trap") {
+            startGame();
+          } else if (state === "playing") {
+            tryCatch();
+          } else if (state === "paused") {
+            state = "playing";
+          }
+        } else if (e.code === "KeyP") {
+          if (state === "playing") state = "paused";
+          else if (state === "paused") state = "playing";
+        } else if (e.code === "KeyR") {
+          startGame();
+        }
+      });
+
+      canvas.addEventListener("pointerdown", () => {
+        if (state === "menu" || state === "win" || state === "lose" || state === "trap") {
+          startGame();
+        } else if (state === "playing") {
+          tryCatch();
+        }
+      });
+
+      showMenu();
+      loadAll().then(() => draw());
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
