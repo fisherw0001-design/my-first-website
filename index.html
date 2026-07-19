@@ -10,6 +10,7 @@
 
   <!-- 切换龙虾模式按钮 -->
   <button id="lobsterBtn" class="lobster-btn">龙虾模式</button>
+  <a href="game2.html" id="raiseLobsterBtn" class="raise-lobster-btn" hidden>养龙虾</a>
 
   <!-- 标题 -->
   <h1>👋 你好，欢迎来到我的网页！Hey there, glad you're here! </h1>
@@ -101,13 +102,17 @@
   // 切换龙虾模式
   const lobsterBtn = document.getElementById("lobsterBtn");
 
+  const raiseLobsterBtn = document.getElementById("raiseLobsterBtn");
+
   lobsterBtn.addEventListener("click", function () {
     document.body.classList.toggle("lobster-mode");
 
     if (document.body.classList.contains("lobster-mode")) {
       lobsterBtn.textContent = "普通模式";
+      raiseLobsterBtn.hidden = false;
     } else {
       lobsterBtn.textContent = "龙虾模式";
+      raiseLobsterBtn.hidden = true;
     }
   });
 </script>

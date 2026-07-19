@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>一键养虾 · 疯狂小龙虾</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #1f1f1f;
+      background:
+        radial-gradient(circle at 20% 10%, #ffe8d6 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, #ffd0c0 0%, transparent 45%),
+        #fff8f3;
+    }
+    h1 {
+      font-size: clamp(1.15rem, 3.4vw, 1.55rem);
+      font-weight: 900;
+      letter-spacing: 0.02em;
+    }
+    .shell {
+      width: min(440px, 100%);
+      background: #fff;
+      border: 2.5px solid #222;
+      border-radius: 18px;
+      box-shadow: 6px 6px 0 #222;
+      overflow: hidden;
+    }
+    .hud {
+      padding: 12px 14px 10px;
+      border-bottom: 2px solid #222;
+      display: grid;
+      gap: 8px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    .row strong { font-variant-numeric: tabular-nums; }
+    .meter {
+      display: grid;
+      grid-template-columns: 48px 1fr 36px;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.86rem;
+    }
+    .meter .bar {
+      height: 12px;
+      border: 2px solid #222;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #f2f2f2;
+    }
+    .meter .bar > i {
+      display: block;
+      height: 100%;
+      width: 50%;
+      transition: width 0.2s ease, background 0.2s ease;
+    }
+    .bar.hunger > i { background: #ff8a4c; }
+    .bar.mood > i { background: #ff6b9d; }
+    .bar.energy > i { background: #5ec8ff; }
+    .stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border: 2px solid #222;
+      border-radius: 999px;
+      background: #fff3e8;
+      font-weight: 800;
+      font-size: 0.84rem;
+    }
+    .stage {
+      position: relative;
+      background: linear-gradient(180deg, #fff 0%, #fff6ef 100%);
+      min-height: 280px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .event-banner {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      top: 12px;
+      min-height: 54px;
+      padding: 10px 12px;
+      border: 2.5px solid #222;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 3px 3px 0 #222;
+      display: none;
+      gap: 8px;
+      align-items: center;
+    }
+    .event-banner.show { display: flex; }
+    .event-banner.urgent {
+      background: #fff1f1;
+      animation: pulse 0.55s ease infinite alternate;
+    }
+    @keyframes pulse {
+      from { transform: translateY(0); }
+      to { transform: translateY(-2px); }
+    }
+    .event-icon {
+      width: 40px;
+      height: 40px;
+      border: 2px solid #222;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.35rem;
+      background: #fff8f0;
+      flex: 0 0 auto;
+    }
+    .event-text { flex: 1; min-width: 0; }
+    .event-text b { display: block; font-size: 0.98rem; }
+    .event-text span { color: #666; font-size: 0.8rem; }
+    .event-timer {
+      width: 42px;
+      height: 42px;
+      flex: 0 0 auto;
+    }
+    .controls {
+      padding: 12px 14px 14px;
+      border-top: 2px solid #222;
+      display: grid;
+      gap: 10px;
+    }
+    .big-btn {
+      appearance: none;
+      width: 100%;
+      border: 2.5px solid #222;
+      border-radius: 14px;
+      padding: 14px 12px;
+      font-size: 1.08rem;
+      font-weight: 900;
+      cursor: pointer;
+      color: #fff;
+      background: #ff5a2f;
+      box-shadow: 4px 4px 0 #222;
+      user-select: none;
+    }
+    .big-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 #222;
+    }
+    .big-btn:disabled {
+      background: #bbb;
+      color: #eee;
+      cursor: default;
+      transform: none;
+      box-shadow: 2px 2px 0 #888;
+    }
+    .hint {
+      text-align: center;
+      color: #666;
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+    .hint kbd {
+      display: inline-block;
+      padding: 1px 7px;
+      border: 1.5px solid #222;
+      border-radius: 6px;
+      background: #fff;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+    }
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 248, 243, 0.92);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 5;
+    }
+    .overlay.hidden { display: none; }
+    .card {
+      width: min(340px, 100%);
+      background: #fff;
+      border: 2.5px solid #222;
+      border-radius: 16px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 5px 5px 0 #222;
+    }
+    .card h2 { font-size: 1.35rem; margin-bottom: 8px; }
+    .card p {
+      color: #444;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      margin-bottom: 8px;
+    }
+    .card ul {
+      text-align: left;
+      margin: 10px 0 14px;
+      padding: 10px 12px 10px 28px;
+      border: 2px dashed #bbb;
+      border-radius: 12px;
+      background: #fafafa;
+      color: #333;
+      font-size: 0.88rem;
+    }
+    .card li { margin: 5px 0; }
+    .ghost {
+      appearance: none;
+      border: 2.5px solid #222;
+      border-radius: 12px;
+      padding: 11px 18px;
+      font-weight: 900;
+      font-size: 1rem;
+      background: #222;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #888;
+    }
+    .log {
+      min-height: 1.2em;
+      text-align: center;
+      font-size: 0.86rem;
+      color: #555;
+      font-weight: 700;
+    }
+    .log.good { color: #0a7a32; }
+    .log.bad { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <h1>🦞 一键养虾</h1>
+
+  <div class="shell">
+    <div class="hud">
+      <div class="row">
+        <span class="stage-pill" id="stagePill">幼虾 · Lv.1</span>
+        <span>成长 <strong id="growthText">0 / 100</strong></span>
+      </div>
+      <div class="meter">
+        <span>饱腹</span>
+        <div class="bar hunger"><i id="hungerBar"></i></div>
+        <strong id="hungerText">70</strong>
+      </div>
+      <div class="meter">
+        <span>开心</span>
+        <div class="bar mood"><i id="moodBar"></i></div>
+        <strong id="moodText">70</strong>
+      </div>
+      <div class="meter">
+        <span>体力</span>
+        <div class="bar energy"><i id="energyBar"></i></div>
+        <strong id="energyText">70</strong>
+      </div>
+    </div>
+
+    <div class="stage">
+      <canvas id="game" width="440" height="280" aria-label="养虾画面"></canvas>
+      <div class="event-banner" id="eventBanner">
+        <div class="event-icon" id="eventIcon">🍤</div>
+        <div class="event-text">
+          <b id="eventTitle">该喂食了！</b>
+          <span id="eventDesc">现在按按钮</span>
+        </div>
+        <canvas class="event-timer" id="eventTimer" width="42" height="42"></canvas>
+      </div>
+      <div class="overlay" id="overlay">
+        <div class="card">
+          <h2 id="titleText">养一只疯狂小龙虾</h2>
+          <p id="msgText">只有一个按钮。事件出现时再按，时机就是一切。</p>
+          <ul>
+            <li>会随机出现：喂食 / 陪玩 / 睡觉 / 打病毒</li>
+            <li>事件亮起时按 <strong>空格</strong> 或大按钮（后期要连按两次）</li>
+            <li>没事乱按会重罚体力；错过事件掉很多状态</li>
+            <li>成长到 <strong>100</strong>，养成「疯狂小龙虾」就赢</li>
+            <li>任一状态归零就养失败 · 难度较高</li>
+          </ul>
+          <button class="ghost" id="startBtn">开始养虾</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="log" id="logText">准备好了吗？</div>
+      <button class="big-btn" id="actionBtn" disabled>按一下（空格）</button>
+      <p class="hint">操作：<kbd>空格</kbd> / 点按钮 · <kbd>P</kbd> 暂停 · <kbd>R</kbd> 重开</p>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("game");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width;
+      const H = canvas.height;
+      const timerCanvas = document.getElementById("eventTimer");
+      const tctx = timerCanvas.getContext("2d");
+
+      const hungerBar = document.getElementById("hungerBar");
+      const moodBar = document.getElementById("moodBar");
+      const energyBar = document.getElementById("energyBar");
+      const hungerText = document.getElementById("hungerText");
+      const moodText = document.getElementById("moodText");
+      const energyText = document.getElementById("energyText");
+      const growthText = document.getElementById("growthText");
+      const stagePill = document.getElementById("stagePill");
+      const eventBanner = document.getElementById("eventBanner");
+      const eventIcon = document.getElementById("eventIcon");
+      const eventTitle = document.getElementById("eventTitle");
+      const eventDesc = document.getElementById("eventDesc");
+      const overlay = document.getElementById("overlay");
+      const titleText = document.getElementById("titleText");
+      const msgText = document.getElementById("msgText");
+      const startBtn = document.getElementById("startBtn");
+      const actionBtn = document.getElementById("actionBtn");
+      const logText = document.getElementById("logText");
+
+      const GOAL = 100;
+      const STAGES = [
+        { min: 0, name: "幼虾", lv: 1, color: "#ffb089" },
+        { min: 20, name: "小虾", lv: 2, color: "#ff8a4c" },
+        { min: 45, name: "大虾", lv: 3, color: "#ff5a2f" },
+        { min: 70, name: "狠虾", lv: 4, color: "#e63b18" },
+        { min: 100, name: "疯狂小龙虾", lv: 5, color: "#c81e0f" },
+      ];
+
+      const EVENT_TYPES = [
+        {
+          id: "feed",
+          icon: "🍤",
+          title: "该喂食了！",
+          desc: "现在按一下投喂",
+          duration: 1.9,
+          ok: "吃得真香！",
+          miss: "饿到钳子发软…",
+          applyOk: (s) => {
+            s.hunger = clamp(s.hunger + 16);
+            s.mood = clamp(s.mood + 2);
+            s.growth += 5;
+          },
+          applyMiss: (s) => {
+            s.hunger = clamp(s.hunger - 24);
+            s.mood = clamp(s.mood - 10);
+          },
+        },
+        {
+          id: "play",
+          icon: "🎮",
+          title: "它想玩！",
+          desc: "现在按一下陪玩",
+          duration: 1.7,
+          ok: "钳钳舞跳起来！",
+          miss: "龙虾有点无聊…",
+          applyOk: (s) => {
+            s.mood = clamp(s.mood + 16);
+            s.energy = clamp(s.energy - 10);
+            s.growth += 5;
+          },
+          applyMiss: (s) => {
+            s.mood = clamp(s.mood - 22);
+            s.energy = clamp(s.energy - 6);
+          },
+        },
+        {
+          id: "sleep",
+          icon: "💤",
+          title: "它困了…",
+          desc: "现在按一下哄睡",
+          duration: 2.0,
+          ok: "呼噜呼噜充上电",
+          miss: "黑眼圈更重了",
+          applyOk: (s) => {
+            s.energy = clamp(s.energy + 18);
+            s.hunger = clamp(s.hunger - 8);
+            s.growth += 4;
+          },
+          applyMiss: (s) => {
+            s.energy = clamp(s.energy - 22);
+            s.mood = clamp(s.mood - 6);
+          },
+        },
+        {
+          id: "virus",
+          icon: "🦠",
+          title: "病毒入侵！",
+          desc: "快按杀毒（别犹豫）",
+          duration: 1.25,
+          ok: "防火墙啪一下！",
+          miss: "中招了，状态狂掉",
+          urgent: true,
+          applyOk: (s) => {
+            s.mood = clamp(s.mood + 4);
+            s.energy = clamp(s.energy - 4);
+            s.growth += 8;
+          },
+          applyMiss: (s) => {
+            s.hunger = clamp(s.hunger - 14);
+            s.mood = clamp(s.mood - 26);
+            s.energy = clamp(s.energy - 20);
+          },
+        },
+      ];
+
+      let state = "menu"; // menu | playing | paused | win | lose
+      let stats = null;
+      let event = null; // { type, age, max }
+      let nextEventIn = 0;
+      let anim = 0;
+      let bounce = 0;
+      let lastTs = 0;
+      let particles = [];
+      let idleMsgAt = 0;
+
+      function clamp(n, a = 0, b = 100) {
+        return Math.max(a, Math.min(b, n));
+      }
+
+      function stageOf(growth) {
+        let cur = STAGES[0];
+        for (const s of STAGES) {
+          if (growth >= s.min) cur = s;
+        }
+        return cur;
+      }
+
+      function setLog(text, kind = "") {
+        logText.textContent = text;
+        logText.className = "log" + (kind ? " " + kind : "");
+      }
+
+      function updateHud() {
+        const g = Math.floor(stats.growth);
+        hungerBar.style.width = stats.hunger + "%";
+        moodBar.style.width = stats.mood + "%";
+        energyBar.style.width = stats.energy + "%";
+        hungerText.textContent = Math.round(stats.hunger);
+        moodText.textContent = Math.round(stats.mood);
+        energyText.textContent = Math.round(stats.energy);
+        growthText.textContent = `${Math.min(g, GOAL)} / ${GOAL}`;
+        const st = stageOf(stats.growth);
+        stagePill.textContent = `${st.name} · Lv.${st.lv}`;
+      }
+
+      function resetStats() {
+        stats = {
+          hunger: 62,
+          mood: 62,
+          energy: 62,
+          growth: 0,
+        };
+        event = null;
+        nextEventIn = 1.0;
+        particles = [];
+        bounce = 0;
+        anim = 0;
+        idleMsgAt = 0;
+        hideEvent();
+        updateHud();
+        setLog("难度已提高：事件更短，乱按更疼！");
+      }
+
+      function showOverlay(title, msg, btn = "再养一只") {
+        titleText.textContent = title;
+        msgText.textContent = msg;
+        startBtn.textContent = btn;
+        overlay.classList.remove("hidden");
+        actionBtn.disabled = true;
+      }
+
+      function hideOverlay() {
+        overlay.classList.add("hidden");
+        actionBtn.disabled = false;
+      }
+
+      function hideEvent() {
+        eventBanner.classList.remove("show", "urgent");
+      }
+
+      function showEventUI() {
+        if (!event) return hideEvent();
+        const t = event.type;
+        eventIcon.textContent = t.icon;
+        eventTitle.textContent = t.title;
+        eventDesc.textContent = t.desc;
+        eventBanner.classList.add("show");
+        eventBanner.classList.toggle("urgent", !!t.urgent);
+      }
+
+      function neededPresses() {
+        // 成长越高，越常需要连按两次
+        if (stats.growth >= 70) return Math.random() < 0.55 ? 2 : 1;
+        if (stats.growth >= 40) return Math.random() < 0.35 ? 2 : 1;
+        if (stats.growth >= 20) return Math.random() < 0.15 ? 2 : 1;
+        return 1;
+      }
+
+      function startEvent(type, forceLow = false) {
+        const shrink = Math.min(0.45, stats.growth * 0.0055);
+        const duration = forceLow
+          ? Math.max(1.4, type.duration)
+          : Math.max(0.75, type.duration * (1 - shrink));
+        const need = forceLow
+          ? 1
+          : (type.urgent && stats.growth >= 30
+            ? (Math.random() < 0.4 ? 2 : 1)
+            : neededPresses());
+        event = { type, age: 0, max: duration, need, got: 0, forceLow };
+        showEventUI();
+        if (forceLow) {
+          eventBanner.classList.add("urgent");
+          setLog("数值过低！快处理！", "bad");
+        } else if (need >= 2) {
+          eventTitle.textContent = type.title + " ×2";
+          eventDesc.textContent = "连按两次！";
+          setLog(type.urgent ? "紧急！连按两次！" : "连按两次！", type.urgent ? "bad" : "");
+        } else {
+          setLog(type.urgent ? "紧急！快按！" : "事件来了！", type.urgent ? "bad" : "");
+        }
+      }
+
+      function spawnEvent() {
+        // 病毒更早、更常出现
+        let pool = EVENT_TYPES.slice();
+        if (stats.growth < 10) {
+          pool = EVENT_TYPES.filter((e) => e.id !== "virus" || Math.random() < 0.45);
+        } else if (stats.growth >= 50 && Math.random() < 0.28) {
+          // 后期额外偏向病毒
+          pool = EVENT_TYPES.filter((e) => e.id === "virus").concat(EVENT_TYPES);
+        }
+        const type = pool[Math.floor(Math.random() * pool.length)];
+        startEvent(type, false);
+      }
+
+      function checkLowStatEvents() {
+        if (event || state !== "playing") return;
+        if (stats.hunger < 7) {
+          const type = EVENT_TYPES.find((e) => e.id === "feed");
+          startEvent(type, true);
+          eventTitle.textContent = "饿坏了！";
+          eventDesc.textContent = "饥饿 < 7，快喂食！";
+        } else if (stats.mood < 7) {
+          const type = EVENT_TYPES.find((e) => e.id === "play");
+          startEvent(type, true);
+          eventTitle.textContent = "心情崩了！";
+          eventDesc.textContent = "心情 < 7，快陪玩！";
+        } else if (stats.energy < 7) {
+          const type = EVENT_TYPES.find((e) => e.id === "sleep");
+          startEvent(type, true);
+          eventTitle.textContent = "精力见底！";
+          eventDesc.textContent = "精力 < 7，快哄睡！";
+        }
+      }
+
+      function clearEvent(success) {
+        if (!event) return;
+        const t = event.type;
+        if (success) {
+          t.applyOk(stats);
+          setLog(t.ok, "good");
+          bounce = 0.45;
+          burst(W * 0.5, H * 0.55, t.urgent ? "#ff5a2f" : "#ffb089", 14);
+        } else {
+          t.applyMiss(stats);
+          setLog(t.miss, "bad");
+          bounce = 0.2;
+        }
+        event = null;
+        hideEvent();
+        // 事件间隔更短，后期更密
+        const gapShrink = Math.min(0.85, stats.growth * 0.008);
+        nextEventIn = Math.max(0.35, 0.7 + Math.random() * 0.9 - gapShrink);
+        updateHud();
+        checkEnd();
+      }
+
+      function pressAction() {
+        if (state !== "playing") return;
+
+        if (event) {
+          event.got += 1;
+          if (event.got >= event.need) {
+            clearEvent(true);
+          } else {
+            setLog(`再按 ${event.need - event.got} 次！`, "good");
+            bounce = 0.2;
+            burst(W * 0.5, H * 0.55, "#ffb089", 6);
+          }
+          return;
+        }
+
+        // 乱按重罚
+        stats.energy = clamp(stats.energy - 14);
+        stats.mood = clamp(stats.mood - 6);
+        stats.hunger = clamp(stats.hunger - 4);
+        setLog("乱按重罚！等事件再按", "bad");
+        bounce = 0.15;
+        updateHud();
+        checkEnd();
+      }
+
+      function checkEnd() {
+        if (stats.growth >= GOAL) {
+          state = "win";
+          stats.growth = GOAL;
+          updateHud();
+          showOverlay(
+            "养成成功！",
+            "你养出了「疯狂小龙虾」！钳子闪亮，风扇呼呼，作业都不怕。",
+            "再养一只"
+          );
+          setLog("胜利！疯狂小龙虾登场", "good");
+          return;
+        }
+        if (stats.hunger <= 0 || stats.mood <= 0 || stats.energy <= 0) {
+          state = "lose";
+          showOverlay(
+            "养虾失败…",
+            `状态见底了。成长 ${Math.floor(stats.growth)} / ${GOAL}。下次盯紧事件再按！`,
+            "重新养"
+          );
+          setLog("失败了，再来", "bad");
+        }
+      }
+
+      function burst(x, y, color, n) {
+        for (let i = 0; i < n; i++) {
+          const a = Math.random() * Math.PI * 2;
+          const sp = 1 + Math.random() * 3;
+          particles.push({
+            x, y,
+            vx: Math.cos(a) * sp,
+            vy: Math.sin(a) * sp - 1,
+            life: 0.5 + Math.random() * 0.4,
+            color,
+            size: 2 + Math.random() * 3,
+          });
+        }
+      }
+
+      function update(dt) {
+        if (state !== "playing") return;
+        anim += dt;
+        bounce = Math.max(0, bounce - dt);
+
+        // 自然衰减更快，后期再加速
+        const late = 1 + Math.min(0.7, stats.growth / 100 * 0.7);
+        stats.hunger = clamp(stats.hunger - 3.4 * dt * late);
+        stats.mood = clamp(stats.mood - 2.6 * dt * late);
+        stats.energy = clamp(stats.energy - 3.0 * dt * late);
+
+        checkLowStatEvents();
+
+        if (event) {
+          event.age += dt;
+          if (event.age >= event.max) clearEvent(false);
+        } else {
+          nextEventIn -= dt;
+          if (nextEventIn <= 0) spawnEvent();
+        }
+
+        // idle tip
+        idleMsgAt += dt;
+        if (!event && idleMsgAt > 4.5 && state === "playing") {
+          idleMsgAt = 0;
+          if (Math.random() < 0.5) setLog("等等事件，别乱按…");
+        }
+
+        for (const p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.1;
+          p.life -= dt;
+        }
+        particles = particles.filter((p) => p.life > 0);
+
+        updateHud();
+        if (state === "playing") checkEnd();
+      }
+
+      function drawTimer() {
+        const s = 42;
+        tctx.clearRect(0, 0, s, s);
+        if (!event) return;
+        const left = 1 - event.age / event.max;
+        tctx.beginPath();
+        tctx.arc(21, 21, 16, 0, Math.PI * 2);
+        tctx.strokeStyle = "#ddd";
+        tctx.lineWidth = 4;
+        tctx.stroke();
+        tctx.beginPath();
+        tctx.arc(21, 21, 16, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * left);
+        tctx.strokeStyle = event.type.urgent ? "#e11d48" : "#ff5a2f";
+        tctx.lineWidth = 4;
+        tctx.lineCap = "round";
+        tctx.stroke();
+      }
+
+      function drawLobster(cx, cy, scale, stage) {
+        ctx.save();
+        ctx.translate(cx, cy + Math.sin(anim * 3) * 3 - bounce * 18);
+        ctx.scale(scale, scale);
+
+        // shadow
+        ctx.fillStyle = "rgba(0,0,0,0.08)";
+        ctx.beginPath();
+        ctx.ellipse(0, 38, 46, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        const body = stage.color;
+        // tail fans
+        ctx.fillStyle = body;
+        ctx.strokeStyle = "#222";
+        ctx.lineWidth = 3;
+        for (let i = -1; i <= 1; i++) {
+          ctx.beginPath();
+          ctx.ellipse(-48, 8 + i * 10, 16, 9, i * 0.35, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        // body segments
+        for (let i = 0; i < 4; i++) {
+          const x = -28 + i * 14;
+          roundRectPath(x, -14, 18, 28, 8);
+          ctx.fillStyle = body;
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        // head
+        roundRectPath(20, -20, 36, 40, 14);
+        ctx.fillStyle = body;
+        ctx.fill();
+        ctx.stroke();
+
+        // eyes
+        ctx.fillStyle = "#fff";
+        ctx.beginPath();
+        ctx.arc(34, -6, 7, 0, Math.PI * 2);
+        ctx.arc(48, -6, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "#222";
+        const look = event ? 1.5 : Math.sin(anim * 2) * 1.2;
+        ctx.beginPath();
+        ctx.arc(34 + look, -6, 3, 0, Math.PI * 2);
+        ctx.arc(48 + look, -6, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // antennae
+        ctx.beginPath();
+        ctx.moveTo(40, -18);
+        ctx.quadraticCurveTo(50, -40, 62, -46 + Math.sin(anim * 5) * 3);
+        ctx.moveTo(48, -18);
+        ctx.quadraticCurveTo(60, -36, 72, -40 + Math.cos(anim * 5) * 3);
+        ctx.stroke();
+
+        // claws
+        const clawOpen = event ? 0.25 : 0.05;
+        drawClaw(18, 18, -0.7 - clawOpen, body);
+        drawClaw(28, 20, 0.55 + clawOpen, body);
+
+        // stage flair
+        if (stage.lv >= 3) {
+          // little computer screen on back
+          roundRectPath(-10, -28, 28, 18, 4);
+          ctx.fillStyle = "#1f2937";
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = stage.lv >= 5 ? "#5eead4" : "#7dd3fc";
+          ctx.font = "bold 10px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText(stage.lv >= 5 ? "MAX" : "PC", 4, -15);
+          ctx.textAlign = "left";
+        }
+        if (stage.lv >= 5) {
+          // crown
+          ctx.fillStyle = "#fbbf24";
+          ctx.beginPath();
+          ctx.moveTo(28, -28);
+          ctx.lineTo(32, -40);
+          ctx.lineTo(38, -30);
+          ctx.lineTo(44, -42);
+          ctx.lineTo(50, -30);
+          ctx.lineTo(56, -40);
+          ctx.lineTo(60, -28);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawClaw(x, y, rot, color) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rot);
+        ctx.fillStyle = color;
+        ctx.strokeStyle = "#222";
+        ctx.lineWidth = 3;
+        // arm
+        roundRectPath(0, -5, 22, 10, 4);
+        ctx.fill();
+        ctx.stroke();
+        // pincer
+        ctx.beginPath();
+        ctx.ellipse(28, -6, 10, 6, -0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(28, 6, 10, 6, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function roundRectPath(x, y, w, h, r) {
+        const rr = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + rr, y);
+        ctx.arcTo(x + w, y, x + w, y + h, rr);
+        ctx.arcTo(x + w, y + h, x, y + h, rr);
+        ctx.arcTo(x, y + h, x, y, rr);
+        ctx.arcTo(x, y, x + w, y, rr);
+        ctx.closePath();
+      }
+
+      function drawScene() {
+        // soft room
+        ctx.fillStyle = "#fffaf6";
+        ctx.fillRect(0, 0, W, H);
+        // floor
+        ctx.fillStyle = "#ffe8d6";
+        ctx.fillRect(0, H * 0.72, W, H * 0.28);
+        ctx.strokeStyle = "rgba(0,0,0,0.06)";
+        ctx.lineWidth = 1;
+        for (let x = 0; x < W; x += 28) {
+          ctx.beginPath();
+          ctx.moveTo(x, H * 0.72);
+          ctx.lineTo(x - 30, H);
+          ctx.stroke();
+        }
+
+        // bowl / tank outline
+        ctx.strokeStyle = "#222";
+        ctx.lineWidth = 3;
+        ctx.fillStyle = "rgba(125, 211, 252, 0.18)";
+        roundRectPath(48, 70, W - 96, H - 110, 24);
+        ctx.fill();
+        ctx.stroke();
+
+        // water line
+        ctx.strokeStyle = "rgba(56, 189, 248, 0.45)";
+        ctx.beginPath();
+        ctx.moveTo(60, 100);
+        for (let x = 60; x < W - 60; x += 12) {
+          ctx.lineTo(x, 100 + Math.sin(x * 0.05 + anim * 3) * 2);
+        }
+        ctx.stroke();
+
+        const st = stageOf(stats ? stats.growth : 0);
+        const scale = 1 + Math.min(0.45, (stats ? stats.growth : 0) / 100 * 0.45);
+        drawLobster(W * 0.52, H * 0.55, scale, st);
+
+        // particles
+        for (const p of particles) {
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+
+        if (state === "paused") {
+          ctx.fillStyle = "rgba(255,255,255,0.65)";
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = "#222";
+          ctx.font = "bold 26px Segoe UI, sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("已暂停", W / 2, H / 2);
+          ctx.font = "14px Segoe UI, sans-serif";
+          ctx.fillStyle = "#555";
+          ctx.fillText("按 P 继续", W / 2, H / 2 + 26);
+          ctx.textAlign = "left";
+        }
+      }
+
+      function loop(ts) {
+        if (!lastTs) lastTs = ts;
+        const dt = Math.min(0.033, (ts - lastTs) / 1000);
+        lastTs = ts;
+        update(dt);
+        drawScene();
+        drawTimer();
+        requestAnimationFrame(loop);
+      }
+
+      function startGame() {
+        resetStats();
+        state = "playing";
+        hideOverlay();
+        lastTs = 0;
+      }
+
+      startBtn.addEventListener("click", startGame);
+      actionBtn.addEventListener("click", pressAction);
+      canvas.addEventListener("pointerdown", () => {
+        if (state === "menu" || state === "win" || state === "lose") startGame();
+        else if (state === "playing") pressAction();
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.code === "Space") {
+          e.preventDefault();
+          if (state === "menu" || state === "win" || state === "lose") startGame();
+          else if (state === "playing") pressAction();
+          else if (state === "paused") state = "playing";
+        } else if (e.code === "KeyP") {
+          if (state === "playing") {
+            state = "paused";
+            setLog("暂停中");
+          } else if (state === "paused") {
+            state = "playing";
+            setLog("继续养虾！");
+          }
+        } else if (e.code === "KeyR") {
+          startGame();
+        }
+      });
+
+      // initial draw
+      stats = { hunger: 70, mood: 70, energy: 70, growth: 0 };
+      updateHud();
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
