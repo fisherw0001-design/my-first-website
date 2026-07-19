@@ -346,17 +346,17 @@
           icon: "🍤",
           title: "该喂食了！",
           desc: "现在按一下投喂",
-          duration: 1.9,
+          duration: 2.4,
           ok: "吃得真香！",
           miss: "饿到钳子发软…",
           applyOk: (s) => {
-            s.hunger = clamp(s.hunger + 16);
-            s.mood = clamp(s.mood + 2);
-            s.growth += 5;
+            s.hunger = clamp(s.hunger + 24);
+            s.mood = clamp(s.mood + 4);
+            s.growth += 8;
           },
           applyMiss: (s) => {
-            s.hunger = clamp(s.hunger - 24);
-            s.mood = clamp(s.mood - 10);
+            s.hunger = clamp(s.hunger - 10);
+            s.mood = clamp(s.mood - 4);
           },
         },
         {
@@ -364,17 +364,17 @@
           icon: "🎮",
           title: "它想玩！",
           desc: "现在按一下陪玩",
-          duration: 1.7,
+          duration: 2.2,
           ok: "钳钳舞跳起来！",
           miss: "龙虾有点无聊…",
           applyOk: (s) => {
-            s.mood = clamp(s.mood + 16);
-            s.energy = clamp(s.energy - 10);
-            s.growth += 5;
+            s.mood = clamp(s.mood + 24);
+            s.energy = clamp(s.energy - 4);
+            s.growth += 8;
           },
           applyMiss: (s) => {
-            s.mood = clamp(s.mood - 22);
-            s.energy = clamp(s.energy - 6);
+            s.mood = clamp(s.mood - 10);
+            s.energy = clamp(s.energy - 3);
           },
         },
         {
@@ -382,17 +382,17 @@
           icon: "💤",
           title: "它困了…",
           desc: "现在按一下哄睡",
-          duration: 2.0,
+          duration: 2.5,
           ok: "呼噜呼噜充上电",
           miss: "黑眼圈更重了",
           applyOk: (s) => {
-            s.energy = clamp(s.energy + 18);
-            s.hunger = clamp(s.hunger - 8);
-            s.growth += 4;
+            s.energy = clamp(s.energy + 26);
+            s.hunger = clamp(s.hunger - 4);
+            s.growth += 7;
           },
           applyMiss: (s) => {
-            s.energy = clamp(s.energy - 22);
-            s.mood = clamp(s.mood - 6);
+            s.energy = clamp(s.energy - 10);
+            s.mood = clamp(s.mood - 3);
           },
         },
         {
@@ -400,19 +400,19 @@
           icon: "🦠",
           title: "病毒入侵！",
           desc: "快按杀毒（别犹豫）",
-          duration: 1.25,
+          duration: 1.8,
           ok: "防火墙啪一下！",
           miss: "中招了，状态狂掉",
           urgent: true,
           applyOk: (s) => {
-            s.mood = clamp(s.mood + 4);
-            s.energy = clamp(s.energy - 4);
-            s.growth += 8;
+            s.mood = clamp(s.mood + 6);
+            s.energy = clamp(s.energy - 2);
+            s.growth += 10;
           },
           applyMiss: (s) => {
-            s.hunger = clamp(s.hunger - 14);
-            s.mood = clamp(s.mood - 26);
-            s.energy = clamp(s.energy - 20);
+            s.hunger = clamp(s.hunger - 6);
+            s.mood = clamp(s.mood - 10);
+            s.energy = clamp(s.energy - 8);
           },
         },
       ];
@@ -459,20 +459,20 @@
 
       function resetStats() {
         stats = {
-          hunger: 62,
-          mood: 62,
-          energy: 62,
+          hunger: 65,
+          mood: 65,
+          energy: 65,
           growth: 0,
         };
         event = null;
-        nextEventIn = 1.0;
+        nextEventIn = 2.0;
         particles = [];
         bounce = 0;
         anim = 0;
         idleMsgAt = 0;
         hideEvent();
         updateHud();
-        setLog("难度已提高：事件更短，乱按更疼！");
+        setLog("简单模式：事件更久，失败也没那么疼！");
       }
 
       function showOverlay(title, msg, btn = "再养一只") {
@@ -503,23 +503,16 @@
       }
 
       function neededPresses() {
-        // 成长越高，越常需要连按两次
-        if (stats.growth >= 70) return Math.random() < 0.55 ? 2 : 1;
-        if (stats.growth >= 40) return Math.random() < 0.35 ? 2 : 1;
-        if (stats.growth >= 20) return Math.random() < 0.15 ? 2 : 1;
+        // 简单模式：基本只按一次
+        if (stats.growth >= 80) return Math.random() < 0.12 ? 2 : 1;
         return 1;
       }
 
       function startEvent(type, forceLow = false) {
-        const shrink = Math.min(0.45, stats.growth * 0.0055);
         const duration = forceLow
-          ? Math.max(1.4, type.duration)
-          : Math.max(0.75, type.duration * (1 - shrink));
-        const need = forceLow
-          ? 1
-          : (type.urgent && stats.growth >= 30
-            ? (Math.random() < 0.4 ? 2 : 1)
-            : neededPresses());
+          ? Math.max(2.0, type.duration)
+          : Math.max(1.6, type.duration * 0.95);
+        const need = forceLow ? 1 : neededPresses();
         event = { type, age: 0, max: duration, need, got: 0, forceLow };
         showEventUI();
         if (forceLow) {
@@ -535,12 +528,11 @@
       }
 
       function spawnEvent() {
-        // 病毒更早、更常出现
+        // 简单模式：前期几乎不出病毒
         let pool = EVENT_TYPES.slice();
-        if (stats.growth < 10) {
-          pool = EVENT_TYPES.filter((e) => e.id !== "virus" || Math.random() < 0.45);
-        } else if (stats.growth >= 50 && Math.random() < 0.28) {
-          // 后期额外偏向病毒
+        if (stats.growth < 40) {
+          pool = EVENT_TYPES.filter((e) => e.id !== "virus");
+        } else if (Math.random() < 0.15) {
           pool = EVENT_TYPES.filter((e) => e.id === "virus").concat(EVENT_TYPES);
         }
         const type = pool[Math.floor(Math.random() * pool.length)];
@@ -582,9 +574,8 @@
         }
         event = null;
         hideEvent();
-        // 事件间隔更短，后期更密
-        const gapShrink = Math.min(0.85, stats.growth * 0.008);
-        nextEventIn = Math.max(0.35, 0.7 + Math.random() * 0.9 - gapShrink);
+        // 事件间隔更宽松
+        nextEventIn = 1.4 + Math.random() * 1.4;
         updateHud();
         checkEnd();
       }
@@ -604,11 +595,10 @@
           return;
         }
 
-        // 乱按重罚
-        stats.energy = clamp(stats.energy - 14);
-        stats.mood = clamp(stats.mood - 6);
-        stats.hunger = clamp(stats.hunger - 4);
-        setLog("乱按重罚！等事件再按", "bad");
+        // 乱按轻罚
+        stats.energy = clamp(stats.energy - 4);
+        stats.mood = clamp(stats.mood - 2);
+        setLog("先等事件再按哦", "bad");
         bounce = 0.15;
         updateHud();
         checkEnd();
@@ -658,11 +648,11 @@
         anim += dt;
         bounce = Math.max(0, bounce - dt);
 
-        // 自然衰减更快，后期再加速
-        const late = 1 + Math.min(0.7, stats.growth / 100 * 0.7);
-        stats.hunger = clamp(stats.hunger - 3.4 * dt * late);
-        stats.mood = clamp(stats.mood - 2.6 * dt * late);
-        stats.energy = clamp(stats.energy - 3.0 * dt * late);
+        // 自然衰减更慢
+        const late = 1 + Math.min(0.25, stats.growth / 100 * 0.25);
+        stats.hunger = clamp(stats.hunger - 1.4 * dt * late);
+        stats.mood = clamp(stats.mood - 1.1 * dt * late);
+        stats.energy = clamp(stats.energy - 1.2 * dt * late);
 
         checkLowStatEvents();
 
