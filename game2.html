@@ -346,7 +346,7 @@
           icon: "🍤",
           title: "该喂食了！",
           desc: "现在按一下投喂",
-          duration: 1.14,
+          duration: 0.8,
           ok: "吃得真香！",
           miss: "饿到钳子发软…",
           applyOk: (s) => {
@@ -364,7 +364,7 @@
           icon: "🎮",
           title: "它想玩！",
           desc: "现在按一下陪玩",
-          duration: 1.02,
+          duration: 0.8,
           ok: "钳钳舞跳起来！",
           miss: "龙虾有点无聊…",
           applyOk: (s) => {
@@ -382,7 +382,7 @@
           icon: "💤",
           title: "它困了…",
           desc: "现在按一下哄睡",
-          duration: 1.2,
+          duration: 0.8,
           ok: "呼噜呼噜充上电",
           miss: "黑眼圈更重了",
           applyOk: (s) => {
@@ -400,7 +400,7 @@
           icon: "🦠",
           title: "病毒入侵！",
           desc: "快按杀毒（别犹豫）",
-          duration: 0.75,
+          duration: 0.55,
           ok: "防火墙啪一下！",
           miss: "中招了，状态狂掉",
           urgent: true,
@@ -510,8 +510,8 @@
 
       function startEvent(type, forceLow = false) {
         const duration = forceLow
-          ? Math.max(0.9, type.duration)
-          : Math.max(0.6, type.duration * 0.95);
+          ? Math.max(0.8, type.duration)
+          : type.duration;
         const need = forceLow ? 1 : neededPresses();
         event = { type, age: 0, max: duration, need, got: 0, forceLow };
         showEventUI();
