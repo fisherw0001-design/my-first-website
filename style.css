@@ -5,11 +5,8 @@ body {
     margin: 50px auto;
     padding: 20px;
     text-align: center;
-    background-image: url("PICT0147.jpg");
+    background-image: url("PICT0147.jpg?v=2");
     background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
 }
 
 .text {
